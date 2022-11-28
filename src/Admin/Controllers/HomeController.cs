@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Bit.Admin.Models;
 using Bit.Core.Settings;
-using Microsoft.AspNetCore.Authorization;
+using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -20,14 +20,20 @@ public class HomeController : Controller
         _logger = logger;
     }
 
-    [Authorize]
     public IActionResult Index()
     {
-        return View(new HomeModel
+        if (User.IsAuthenticated())
         {
-            GlobalSettings = _globalSettings,
-            CurrentVersion = Core.Utilities.AssemblyHelpers.GetVersion()
-        });
+            return View(new HomeModel
+            {
+                GlobalSettings = _globalSettings,
+                CurrentVersion = Core.Utilities.AssemblyHelpers.GetVersion()
+            });
+        }
+        else
+        {
+            return Redirect($"~/login?returnUrl={Request.PathBase}");
+        }
     }
 
     public IActionResult Error()
